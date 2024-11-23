@@ -6,10 +6,22 @@ import { VideoModule } from './modules/video/video.module';
 import { PlaylistModule } from './modules/playlist/playlist.module';
 import { RoomModule } from './modules/room/room.module';
 import { InvitationModule } from './modules/invitation/invitation.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [UserModule, VideoModule, PlaylistModule, RoomModule, InvitationModule],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    MongooseModule.forRoot(process.env.MONGODB_URI),
+    UserModule, 
+    VideoModule, 
+    PlaylistModule, 
+    RoomModule, 
+    InvitationModule
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

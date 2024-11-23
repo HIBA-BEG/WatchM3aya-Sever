@@ -1,26 +1,51 @@
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Video } from './entities/video.entity';
 import { CreateVideoDto } from './dto/create-video.dto';
-import { UpdateVideoDto } from './dto/update-video.dto';
+import { MinioService } from '../minio/minio.service';
 
 @Injectable()
 export class VideoService {
-  create(createVideoDto: CreateVideoDto) {
-    return 'This action adds a new video';
+  constructor(
+    @InjectModel(Video.name) private videoModel: Model<Video>,
+    private minioService: MinioService,
+  ) {}
+
+  async create(
+    createVideoDto: CreateVideoDto, 
+    videoFile: Buffer,
+    posterFile?: Buffer
+  ): Promise<Video> {
+
+    const videoPath = await this.minioService.uploadVideo(
+      videoFile,
+      `${createVideoDto.title}-${Date.now()}.mp4`
+    );
+    
+    let posterPath = '';
+    if (posterFile) {
+      posterPath = await this.minioService.uploadPoster(
+        posterFile,
+        `${createVideoDto.title}-poster-${Date.now()}.jpg`
+      );
+    }
+
+    const createdVideo = new this.videoModel({
+      ...createVideoDto,
+      video: videoPath,
+      poster: posterPath || createVideoDto.poster,
+    });
+
+    return createdVideo.save();
   }
 
-  findAll() {
-    return `This action returns all video`;
+
+  async findAll(): Promise<Video[]> {
+    return this.videoModel.find().exec();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} video`;
-  }
-
-  update(id: number, updateVideoDto: UpdateVideoDto) {
-    return `This action updates a #${id} video`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} video`;
+  async findOne(id: string): Promise<Video> {
+    return this.videoModel.findById(id).exec();
   }
 }
