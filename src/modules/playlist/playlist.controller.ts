@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { PlaylistService } from './playlist.service';
 import { CreatePlaylistDto } from './dto/create-playlist.dto';
 import { UpdatePlaylistDto } from './dto/update-playlist.dto';
+import { Types } from 'mongoose';
 
 @Controller('playlist')
 export class PlaylistController {
@@ -19,16 +20,16 @@ export class PlaylistController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.playlistService.findOne(+id);
+    return this.playlistService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updatePlaylistDto: UpdatePlaylistDto) {
-    return this.playlistService.update(+id, updatePlaylistDto);
+    return this.playlistService.update(id, updatePlaylistDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.playlistService.remove(+id);
+    return this.playlistService.remove(id);
   }
 }
